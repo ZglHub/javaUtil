@@ -1,0 +1,45 @@
+/**
+     * 获取文件夹下面所有文件（包括所有子目录），key为文件名称，value为文件绝对路径
+     *
+     * @param logsPath
+     * @return
+     * @throws IOException
+     */
+    public static Map<String, String> getAllFilePathsByMap(String logsPath) throws IOException {
+        long startMillis = System.currentTimeMillis();
+        File testFile = new File(logsPath);
+        if (!testFile.exists()){
+            log.warn("文件不存在!路径是{}", logsPath);
+            throw new FileNotFoundException();
+        }
+        Map<String, String> logsPathMap = new LinkedHashMap<>();
+        File billFile = new File(logsPath);
+        File[] billFiles = billFile.listFiles();
+        LinkedList<File> tempList = new LinkedList<>();
+        for (File file : billFiles) {
+            if (!file.isDirectory()) {
+                logsPathMap.put(file.getName(), file.getCanonicalPath());
+            } else {
+                tempList.add(file);
+            }
+        }
+        while (!tempList.isEmpty()) {
+            File tempFile = tempList.removeFirst();
+            if (!tempFile.isDirectory()) {
+                logsPathMap.put(tempFile.getName(), tempFile.getCanonicalPath());
+            } else {
+                File[] tempFiles = tempFile.listFiles();
+                for (File file : tempFiles) {
+                    if (!file.isDirectory()) {
+                        logsPathMap.put(file.getName(), file.getCanonicalPath());
+                    } else {
+                        tempList.add(file);
+                    }
+                }
+
+            }
+        }
+        long endMillis = System.currentTimeMillis();
+        log.info("**************************读取文件目录结构耗时：" + (endMillis - startMillis) + "毫秒");
+        return logsPathMap;
+    }
